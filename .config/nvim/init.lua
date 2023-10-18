@@ -53,7 +53,9 @@ require("lazy").setup({
         dependencies = { "nvim-lua/plenary.nvim" },
         config = function()
             local builtin = require("telescope.builtin")
-            vim.keymap.set("n", "<leader>ff", builtin.find_files, { desc = "Open file" })
+            vim.keymap.set("n", "<leader>ff", function()
+                builtin.find_files({ no_ignore_parent = true })
+            end, { desc = "Open file" })
             vim.keymap.set("n", "<leader>fs", function()
                 builtin.grep_string({ search = vim.fn.input("Grep > ") })
             end, { desc = "Open file by search term" })
