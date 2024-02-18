@@ -23,6 +23,10 @@ vim.keymap.set("n", "N", "Nzzzv")
 
 vim.keymap.set("x", "<leader>p", "\"_dP")
 
+-- move visual lines up/down
+vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
+vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
+
 vim.opt.nu = true
 vim.opt.relativenumber = true
 
@@ -56,6 +60,9 @@ require("lazy").setup({
             vim.keymap.set("n", "<leader>ff", function()
                 builtin.find_files({ no_ignore_parent = true })
             end, { desc = "Open file" })
+            vim.keymap.set("n", "<leader>fa", function()
+                builtin.find_files({ no_ignore_parent = true, hidden = true })
+            end, { desc = "Open file (ignore .gitignore)" })
             vim.keymap.set("n", "<leader>fs", function()
                 builtin.grep_string({ search = vim.fn.input("Grep > ") })
             end, { desc = "Open file by search term" })
@@ -93,6 +100,12 @@ require("lazy").setup({
 
             vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = "Goto declaration" })
             vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = "Goto definition" })
+        end,
+    },
+    {
+        "mbbill/undotree",
+        config = function()
+            vim.keymap.set("n", "<leader>u", vim.cmd.UndotreeToggle, { desc = "Undo tree" })
         end,
     },
     {
