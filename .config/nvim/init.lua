@@ -80,26 +80,94 @@ require("lazy").setup({
     },
     {
         "neovim/nvim-lspconfig",
+        dependencies = {
+            "williamboman/mason.nvim",
+            "williamboman/mason-lspconfig.nvim",
+
+            "hrsh7th/cmp-nvim-lsp",
+            "hrsh7th/cmp-buffer",
+            "hrsh7th/cmp-path",
+            "hrsh7th/cmp-cmdline",
+            "hrsh7th/nvim-cmp",
+
+            "L3MON4D3/LuaSnip",
+            "rafamadriz/friendly-snippets",
+
+            "lunarmodules/Penlight",
+        },
         config = function()
-            local lspconfig = require("lspconfig")
-            lspconfig.zls.setup {
+            require("mason").setup()
+
+            local tablex = require("pl.tablex")
+            local mason_lspconfig = require("mason-lspconfig");
+            local lsp = require("lspconfig")
+
+            mason_lspconfig.setup {
+                ensure_installed = {
+                    "tsserver",
+                    "quick_lint_js",
+                }
+            }
+
+            local cmp = require("cmp")
+            cmp.setup {
+                snippet = {
+                    expand = function(args)
+                        require("luasnip").lsp_expand(args.body)
+                    end,
+                },
+                mapping = cmp.mapping.preset.insert({
+                    ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+                    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+                    ['<C-Space>'] = cmp.mapping.complete(),
+                    ['<C-e>'] = cmp.mapping.abort(),
+                    ['<C-CR>'] = cmp.mapping.confirm({ select = true }),
+                }),
+                sources = cmp.config.sources({
+                    { name = "nvim_lsp" },
+                    { name = "luasnip" },
+                }, {
+                    { name = "buffer" },
+                })
+            }
+
+
+            local capabilities = require("cmp_nvim_lsp")
+                .default_capabilities(vim.lsp.protocol.make_client_capabilities())
+
+            local on_attach = function(client, bufnr)
+                local opts_buffer = { noremap = true, silent = true, buffer = bufnr }
+                vim.keymap.set('n', 'gt', vim.lsp.buf.type_definition, opts_buffer, { desc = "Goto type definition" })
+                vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = "Goto declaration" })
+                vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = "Goto definition" })
+            end
+
+            local default_mason_opts = {
+                capabilities = capabilities,
+                on_attach = on_attach,
+                root_dir = lsp.util.root_pattern(".git")
+            }
+
+            mason_lspconfig.setup_handlers({
+                function(server_name)
+                    lsp[server_name].setup(default_mason_opts)
+                end,
+                ["tsserver"] = function()
+                    lsp.tsserver.setup(tablex.merge(default_mason_opts, {
+                        cmd = { "/home/joey/.local/share/nvim/mason/bin/typescript-language-server", "--stdio", "--log-level", "4" },
+                        settings = {
+                            implicitProjectConfiguration = {
+                                checkJs = true,
+                            },
+                        },
+                    }, true))
+                end
+            })
+
+            lsp.zls.setup {
                 cmd = { "zls" },
             }
 
-            lspconfig.tsserver.setup {
-                cmd = {
-                    "npx",
-                    "typescript-language-server",
-                    "--stdio",
-                },
-                filetypes = {
-                    "javascript",
-                    "typescript",
-                },
-            }
-
-            vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = "Goto declaration" })
-            vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = "Goto definition" })
         end,
     },
     {
