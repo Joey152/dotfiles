@@ -76,6 +76,7 @@ require("lazy").setup({
             "json",
             "lua",
             "zig",
+            "python",
         },
     },
     {
@@ -106,6 +107,7 @@ require("lazy").setup({
                 ensure_installed = {
                     "tsserver",
                     "quick_lint_js",
+                    "pyright",
                 }
             }
 
@@ -167,6 +169,8 @@ require("lazy").setup({
             lsp.zls.setup {
                 cmd = { "zls" },
             }
+
+            lsp.pyright.setup {}
 
         end,
     },
